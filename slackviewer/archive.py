@@ -67,13 +67,19 @@ def extract_archive(filepath):
         print("{} already exists".format(extracted_path))
     else:
         # Extract zip
+        # Fix: UnicodeEncodeError: 'charmap' codec can't encode characters
         with zipfile.ZipFile(filepath) as zip:
             print("{} extracting to {}...".format(filepath, extracted_path))
             for info in zip.infolist():
+                original_filename = info.filename
+                try:
+                    # Try encoding with cp437
+                    info.filename = original_filename.encode("cp437").decode("utf-8")
+                except UnicodeEncodeError:
+                    # If cp437 encoding fails, use utf-8
+                    info.filename = original_filename.encode("utf-8").decode("utf-8")
                 print(info.filename)
-                info.filename = info.filename.encode("cp437").decode("utf-8")
-                print(info.filename)
-                zip.extract(info,path=extracted_path)
+                zip.extract(info, path=extracted_path)
 
 
         print("{} extracted to {}".format(filepath, extracted_path))
